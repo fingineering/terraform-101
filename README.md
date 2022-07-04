@@ -262,6 +262,22 @@ Hat man einen passenden Provider ausgemacht, so kann in dem Provider nach den Re
 
 ![Terraform Storage Account Reference](./img/terraform_storage_ref.png)
 
+### Importieren von Ressourcen
+
+Es kommt immer wieder vor, das eine Ressource im Azure Portal oder auch via CLI erstellt wird, um die Infrastruktur vollständig abzubilden, ist es aber notwendig diese Ressourcen auch im Terraform Projekt aufzunehmen. Nein, die Ressource muss nicht gelöscht werden, einfacher ist folgendes Vorgehen:
+
+1. Erstellen der Ressourcenbeschreibung in HCL im Terraform Projekt
+2. Importieren der Ressource mittels `terraform import`
+3. Anpassen der Attribute der Ressource, sodass die Konfiguration der Ressource dem Ist bzw. dem Soll entspricht.
+
+```powershell
+terraform import --var-file=vars.tfvar resource_typ.resource_name /id/oder/Link/to/resource/in/Azure
+```
+
+Sollte die Id der Ressource nicht so einfach via AZ oder Portal zu finden sein, dann hilft meist auch ein Blick in die Terraform Dokumentation. Am Ende der Beschreibung der meisten Ressourcen, in der Provider Dokumentation, findet sich ein Beispiel für ein Import statement.
+
+Da es häufig nicht ohne weiteres zu ersichtlich ist, wie eine Ressource genau definiert ist, kann es notwendig sein, zunächst einen minimalen Dummy in der `.tf` Datei zu erzeugen und anschließend mittels `terraform plan --var-file=vars.tfvars` den Abgleich zur eigentlichen Ressource zu führen. Werden Änderungen an der Ressource vorgeschlagen, so können diese anschließend wieder in die `.tf` Datei übernommen werden oder werden überschrieben bei einem `terraform apply`.
+
 ## Fragen und Kontakte
 
 Wenn dieses Tutorial hilfreich für dich war, dann lass doch gerne einen Stern da oder:
