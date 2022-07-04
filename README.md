@@ -261,3 +261,9 @@ Wie und wo kann Beschreibung der Provider gefunden werden? Die meisten Provider 
 Hat man einen passenden Provider ausgemacht, so kann in dem Provider nach den Ressourcen und deren Beschreibung gesucht werden. Neben Beispielen und der Arguments Reference findet sich am Ende der Dokumentation einer Ressource meist auch eine Beschreibung, wie diese in ein bestehendes Projekt importiert werden kann.
 
 ![Terraform Storage Account Reference](./img/terraform_storage_ref.png)
+
+## Fragen und Kontakte
+
+Wenn dieses Tutorial hilfreich für dich war, dann lass doch gerne einen Stern dar oder
+
+[![Buy me a coffee](/img/buymeacoffee.png)](https://www.buymeacoffee.com/owil)
