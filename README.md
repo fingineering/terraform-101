@@ -234,10 +234,11 @@ backend "azurerm" {
     resource_group_name  = "rg-demo_47829034u"
     storage_account_name = "demo48uq9erhn"
     container_name       = "tfstate"
+    key                  = "prod.terraforn.tfstate"
   }
 ```
 
-Nachdem nun das Backend geändert wurde, muss terraform neu initialisiert werden. Terraform fragt dann, ob der state migriert werden soll. Geschieht dies nicht, so kann der Parameter ``-migrate-state`` mitgegeben werden. 
+Nachdem nun das Backend geändert wurde, muss terraform neu initialisiert werden. Terraform fragt dann, ob der state migriert werden soll. Geschieht dies nicht, so kann der Parameter ``-migrate-state`` mitgegeben werden. Terraform fragt an dieser Stelle auch nach einem Storage Account Access key, sofern dieser nicht über eine Variable mit vorgegeben wurde. Es kann auch eine Authentication via Azure CLI verwendet werden.
 
 ## Verwendung von Variablen, Parameter von Ressourcen und Ausgabe von Daten
 

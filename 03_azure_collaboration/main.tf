@@ -9,6 +9,8 @@ terraform {
     resource_group_name  = "rg-demo_47829034u"
     storage_account_name = "demo48uq9erhn"
     container_name       = "tfstate"
+    key = "prod.terraform.tfstate"
+    access_key = var.storage_account_access_key
   }
 }
 
@@ -23,6 +25,11 @@ provider "azurerm" {
 
 variable "subscription_id" {
   type = string
+}
+
+variable "storage_account_access_key" {
+  type = string
+  sensitive = true
 }
 
 variable "azure_location" {
@@ -58,4 +65,5 @@ resource "azurerm_storage_container" "demo_container" {
  *
  * Content of the variable file vars.tfvars needs to be the id of the used subscription
  * subscription_id = "123f3q4-1243-1223-4211-1232fdw24"
+ * storage_account_access_key = "fmkamöoefnjaoenfiafajoesqjr38dn3qond83qo_"
 **/
