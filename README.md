@@ -83,3 +83,180 @@ Nachdem die `[main.tf](http://main.tf)` Datei erstellt wurde, wird das Terraform
 ```bash
 terraform init
 ```
+
+## Erstellen einer Ressource
+
+Wie im ersten Bespiel gezeigt, besteht die Beschreibung von Infrastruktur in Terraform HCL aus Blöcken und definierten Attributen. Eine Ressource wird dabei immer als ein Block definiert, die Ressourcenbnlöcke strukturieren sich wie folgt: 
+
+```terraform
+resource "provider.resourcen_typ" "Name_der_Ressource" {
+	Parameter = "Wert"
+}
+```
+
+Erstellen wir zum Testen nun mittels Terraform ein Ressource, eine lokale Datei
+
+```terraform
+resource "local_file" "foo"{
+  content = "This is fill text"
+  filename = "${path.module}/foo/bar.baz"
+}
+```
+
+Nun haben wir den ersten Schritt **Schreiben** erledigt. Der nächste Schritt ist daher **Planen** dies machen wir mittel ``terraform validate`` zur syntaktischen Prüfung der Datei und ``terraform plan`` zum ermitteln des Transformationsplanes.
+
+Wenn die zu erwartenden Änderungen dem entsprechen, was wir umsetzen wollen, dann können wir diese mittels ``terraform apply`` anwenden.
+
+Neben den Ressourcen gibt es auch noch ``data`` und ``output`` Blöcke in Terraform um Parameter aus resources zu verwenden und um diese nach dem Anwenden auszugeben. Mit folgenden Blöcken, werden wir uns unsere aktuelle IP mittels des curls providers auf der Commandozeile ausgeben lassen. Die aktuelle IP können wir auch in anderen ``resources``im folgenden verwenden.
+
+```terraform
+// locale ip
+data "curl" "myip" {
+    http_method = "GET"
+    uri = "https://api.ipify.org"
+}
+locals {
+  my_ip  = data.curl.myip.response
+}
+
+output "my_ip" {
+  value = local.my_ip
+}
+```
+
+## Verwenden von Providern für Azure
+
+Terraform wird in vielen Bereich verwendet, lokales Datei und Ordner Management gehört weniger dazu. In vielen Fällen wird Terraform zur Verwaltung von Ressourcen bei den großen Cloud Providern genutzt. Im Folgenden betrachten wir den Provider für Azure und Azure DevOps.
+
+Für diese Teile der Azure Cloud werden jeweils zwei separat gepflegte Provider genutzt. Zum Einen der offizielle Azure Terraform Provider ``azurerm`` 
+
+```terraform
+terraform {
+    required_providers {
+      azurerm = {
+      source  = "hashicorp/azurerm"
+      version = ">=3.9.0"
+    }
+    }
+
+}
+
+provider "azurerm" {
+  features {
+    key_vault {
+      purge_soft_delete_on_destroy = true
+    }
+  }
+  subscription_id = var.subscription_id
+}
+```
+
+Zum Anderen der Provider für Azure DevOps ``azuredevops``
+
+```terraform
+terraform {
+    required_providers {
+      azuredevops = {
+				source  = "microsoft/azuredevops"
+	      version = ">0.1.0"
+    }
+}
+
+provider "azuredevops" {
+  org_service_url       = "https://dev.azure.com/<name_of_organization>/"
+  personal_access_token = var.personal_access_token
+}
+```
+
+Wie im obigen Beispiel können auch beide Provider in einem Block deklariert werden und gemeinsam in einem Projekt genutzt werden. Im Beispiel des Azure Providers wird die Azure SubscriptionID benötigt, diese wollen wir nicht in unserem Git Repository veröffentlichen. Gleiches gilt für so etwas wie den personal_access_token aus Azure DevOps oder andere Secrets. Hierzu können Variablen verwendet werden, welche über eine Umgebungsvariable oder eine ``.tfvars`` Datei in das Projekt eingeschleust werden.
+
+Auch die Verwendung von Secrets aus einem Secret Manager wie dem Azure Key Vault ist möglich. 
+
+**Update der Provider**
+
+Da die Cloud sich ständig weiter entwickelt ist es notwendig, das auch die verwendeten Provider regelmäßig aktualisiert werden. 
+
+Terraform speichert den verwendeten Stand des Providers im lock-file
+
+Aktualisierung des Providers mittels
+
+```powershell
+terraform init --update
+```
+
+Es ist auch zu empfehlen das eigentliche Terraform Executable aktuell zu halten.
+
+## Erstellen von Cloud Ressourcen
+
+Nachdem also der Terraform Provider für Azure deklariert ist, können als nächstes Ressourcen in Azure erstellt werden. Als erstes erstellen wir uns eine Ressourcengruppe. In dieser Ressourcengruppe werden wir dann einen Blob Storage einrichten, mit einem Container.
+
+```terraform
+resource "azurerm_resource_group" "rg-demo_47829034u" {
+  name     = "rg-demo_47829034u"
+  location = var.azure_location
+}
+```
+
+In der Definition des Blob Storages wird auf die Ressourcengruppe referenziert. Somit kann die Ressourcengruppe geändert werden, ohne in den abhängigen Ressourcen die Änderung manuell nach zuführen.
+
+```terraform
+resource "azurerm_storage_account" "demo_storage" {
+    resource_group_name = azurerm_resource_group.rg-management.name
+    name = "demo48uq9erhn"
+    location = var.azure_location
+    account_tier = "Standard"
+    account_replication_type = "LRS"
+} 
+```
+
+Neben der Verwendung der Referenz auf die Ressourcengruppe wird auch eine Umgebungsvariable zur definition der Location der Ressourcen verwendet. Diese Variable enthält keine schützenswerte Information, daher kann dieser auch direkt mit einem Wert im Code deklariert werden.
+
+```terraform
+variable "azure_location{
+	type = string
+	default = "westeurope"
+}
+```
+
+## Gemeinsam an Ressourcen arbeiten
+
+Nun haben wir Infrastruktur lokal definiert, in den meisten Fällen ist das keine gute Idee, meist wird gemeinsam an Infrastruktur gearbeitet. Wie funktioniert dies? Die Definition der Infrastruktur besteht aus Text Dateien, daher kann diese einfach über ein Git Repository ausgetauscht werden.
+
+Für das gemeinsame Bearbeiten von Infrastruktur mit Terraform ist allerdings zu beachten, das Terraform ein Statefile anlegt. Diese Statefile sollte einzigartig sein und allen an der Infrastruktur Mitwirkenden zugänglich sein. Diese in ein Git Repo zu legen ist keine gute Idee. Es gibt nun 2 Möglichkeiten
+
+1. Verwenden eines shared states. Das werden wir im folgenden nutzen. Dazu werden wir im Storage Account, welchen wir angelegt haben einen Container hinzufügen und diesen als backend im Terraform Block nutzen.
+2. Verwendung von Terraform Cloud. Terraform Cloud ist Terraform as a Service. Dabei wird sowohl der State in der Terraform Cloud gespeichert, als auch terraform selbst in einer Cloud Ressource ausgeführt. Hierbei ist zu beachten, dass sowohl DSGVO Themen, als auch Sicherheitsfragen zu klären sein können.
+
+Mit folgendem Stück HCL Code wird der Blob Container zum shared state storage. 
+
+```terraform
+backend "azurerm" {
+    resource_group_name  = "rg-demo_47829034u"
+    storage_account_name = "demo48uq9erhn"
+    container_name       = "tfstate"
+  }
+```
+
+Nachdem nun das Backend geändert wurde, muss terraform neu initialisiert werden. Terraform fragt dann, ob der state migriert werden soll. Geschieht dies nicht, so kann der Parameter ``-migrate-state`` mitgegeben werden. 
+
+## Verwendung von Variablen, Parameter von Ressourcen und Ausgabe von Daten
+
+Terraform hat wie wir gesehen haben die Möglichkeit Variablen aus einem speziellen File zu lesen. Ebenso können diese Variablen aus Umgebungsvariablen gelesen werden, in letzterem Falle müssen die Variablen mit dem Namen TF_VAR_ beginnen. Häufig werden Variablen genutzt um sensitive Informationen in den Terraform run zu injizieren, sollen die Inhalte der Variablen nicht auf der CLI ausgegeben werden, dann können Variablen als sensitive=True markiert werden.
+
+Variablen können vom Typ string, number oder bool sein, zusätzlich gibt es auch komplexere Datentypen, wie list, map oder object.
+
+Neben der Nutzung von Variablen können auch Attribute von anderen Ressourcen verwendet werden um Ressourcen zu konfigurieren. Diese Attribute müssen dann nach dem Schema <resource_type>.<resource_name>.<attribute_name> angesprochen werden. Im unserem Beispiel, wird z.b. der Name der Ressourcengruppe so in der Definition des Storage Accounts verwendet.
+
+Besteht der Bedarf nach Ausgabe von Attributen der erstellten oder verwendeten Ressourcen, so können die Attribute, wie im ersten Beispiel gezeigt, über einen `data` Block addressiert werden und mittels des ``output`` Block dann auf der CLI ausgegeben werden.
+
+## Weitere Themen
+
+Einige Themen werden im Umgang mit Terraform immer wieder benötigt, sind aber nicht direkt ein Teil der Workshops. Hier eine List von hilfreichen Hinweisen.
+
+### Finden von Dokumentation
+
+Wie und wo kann Beschreibung der Provider gefunden werden? Die meisten Provider finden sich in der [Terraform Registry](https://registry.terraform.io/). Hier sind die offiziellen und viele open source provider gelistet. Diese können in Terraformprojekten verwendet werden. 
+
+Hat man einen passenden Provider ausgemacht, so kann in dem Provider nach den Ressourcen und deren Beschreibung gesucht werden. Neben Beispielen und der Arguments Reference findet sich am Ende der Dokumentation einer Ressource meist auch eine Beschreibung, wie diese in ein bestehendes Projekt importiert werden kann.
+
+![Terraform Storage Account Reference](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/2815024f-020b-4671-a9c4-532d7bf9bdd4/Bildschirmfoto_2022-07-04_um_11.30.55.png)
