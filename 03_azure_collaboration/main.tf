@@ -57,7 +57,7 @@ resource "azurerm_storage_account" "demo_storage" {
 // define a container in the afore mentioned storage account
 resource "azurerm_storage_container" "demo_container" {
   name                  = "tfstate"
-  storage_account_name  = azurerm_storage_account.demo_storage
+  storage_account_name  = azurerm_storage_account.demo_storage.name
   container_access_type = "private"
 }
 
