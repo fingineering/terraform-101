@@ -168,7 +168,7 @@ provider "azuredevops" {
 }
 ```
 
-Wie im obigen Beispiel können auch beide Provider in einem Block deklariert werden und gemeinsam in einem Projekt genutzt werden. Im Beispiel des Azure Providers wird die Azure SubscriptionID benötigt, diese wollen wir nicht in unserem Git Repository veröffentlichen. Gleiches gilt für so etwas wie den personal_access_token aus Azure DevOps oder andere Secrets. Hierzu können Variablen verwendet werden, welche über eine Umgebungsvariable oder eine ``.tfvars`` Datei in das Projekt eingeschleust werden.
+Wie im obigen Beispiel können auch beide Provider in einem Block deklariert werden und gemeinsam in einem Projekt genutzt werden. Im Beispiel des Azure Providers wird die Azure SubscriptionID benötigt, diese wollen wir nicht in unserem Git Repository veröffentlichen. Gleiches gilt für so etwas wie den personal_access_token aus Azure DevOps oder andere Secrets. Hierzu können Variablen verwendet werden, welche über eine Umgebungsvariable oder eine ``.tfvars`` Datei in das Projekt eingeschleust werden. Wenn die Datei ``terraform.tfvars``genannt wird, so wird diese automatisch verwendet. Bei anderen Namen muss die Datei mittels des Parameters ``--var-file=dateiname.tf``explizit dem Aufruf mitgegeben werden.
 
 Auch die Verwendung von Secrets aus einem Secret Manager wie dem Azure Key Vault ist möglich. 
 
