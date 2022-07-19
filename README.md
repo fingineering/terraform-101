@@ -78,7 +78,7 @@ In der ersten Zeile wird Terraform als solches konfiguriert, es wird mitgeteilt,
 
 Anschließend können die importierten Provider mittels eines ``provider`` Blocks konfiguriert werden.
 
-Nachdem die `[main.tf](http://main.tf)` Datei erstellt wurde, wird das Terraform Projekt initialisiert mittels
+Nachdem die [main.tf](http://main.tf) Datei erstellt wurde, wird das Terraform Projekt initialisiert mittels
 
 ```bash
 terraform init
