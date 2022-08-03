@@ -36,7 +36,7 @@ resource "azurerm_resource_group" "rg-demo_47829034u" {
 
 // defines a storage account
 resource "azurerm_storage_account" "demo_storage" {
-    resource_group_name = azurerm_resource_group.rg-management.name
+    resource_group_name = azurerm_resource_group.rg-demo_47829034u.name
     name = "demo48uq9erhn"
     location = var.azure_location
     account_tier = "Standard"
