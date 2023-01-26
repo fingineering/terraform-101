@@ -284,4 +284,4 @@ Wenn dieses Tutorial hilfreich für dich war, dann lass doch gerne einen Stern d
 
 [![Buy me a coffee](/img/buymeacoffee.png)](https://www.buymeacoffee.com/owil)
 
-Hast du Fragen zum Thema IaC mit Terraform? Schau doch gerne auf [Fingineering](https://fingineering.net) oder [DATANOMIQ](https://datanomiq.de) vorbei oder erstelle in Issue hier in Github.
+Hast du Fragen zum Thema IaC mit Terraform? Schau doch gerne auf [Fingineering](https://fingineering.net) oder [DATANOMIQ](https://datanomiq.de) vorbei oder erstelle ein Issue hier in Github.
