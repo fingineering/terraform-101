@@ -37,7 +37,7 @@ choco update all
 terraform plan
 ```
 
-1. **Anwenden**: Im letzen Schritte werden die geplanten Änderungen dann auf den Zielträger der Infrastruktur angewendet, also auf dem gewählten Hyperscaler oder auf der angesprochenen Hardware/ Virtualisierungslösung
+3. **Anwenden**: Im letzen Schritte werden die geplanten Änderungen dann auf den Zielträger der Infrastruktur angewendet, also auf dem gewählten Hyperscaler oder auf der angesprochenen Hardware/ Virtualisierungslösung
 
 ```bash
 terraform apply
